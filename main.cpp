@@ -1,21 +1,23 @@
-﻿#include "UndoRedoSystem.h"
+#include "UndoRedoSystem.h"
 #include <iostream>
+#include <limits>
 
 using namespace std;
 
 void showMenu() {
-    // =================================================================
-    // TODO: HIỂN THỊ MENU CHƯƠNG TRÌNH
-    // =================================================================
-    // In ra màn hình danh sách các lựa chọn cho người dùng (từ 0 đến 7):
-    // 1. Nhập hành động mới (Execute Action)
-    // 2. Quay lại bước trước (Undo)
-    // 3. Làm lại bước vừa xóa (Redo)
-    // 4. Xem toàn bộ nhật ký lịch sử (View History)
-    // 5. Nhảy tới một hành động bất kỳ (Jump to ID)
-    // 6. Nạp dữ liệu mẫu từ file Demodata.txt
-    // 7. Đánh giá hiệu suất (TestData_small/medium/large.txt)
-    // 0. Thoát chương trình
+    cout << "\n=====================================\n";
+    cout << "     MO PHONG CHUC NANG UNDO/REDO\n";
+    cout << "=====================================\n";
+    cout << "1. Nhap hanh dong moi\n";
+    cout << "2. Undo (Quay lai buoc truoc)\n";
+    cout << "3. Redo (Lam lai buoc vua Undo)\n";
+    cout << "4. Xem lich su thao tac\n";
+    cout << "5. Nhay toi mot ID bat ky\n";
+    cout << "6. Nap du lieu mau tu file\n";
+    cout << "7. Danh gia hieu suat\n";
+    cout << "0. Thoat\n";
+    cout << "=====================================\n";
+    cout << "Nhap lua chon: ";
 }
 
 int main() {
@@ -24,23 +26,73 @@ int main() {
     string inputStr;
 
     while (true) {
-        // =================================================================
-        // TODO: XỬ LÝ LỰA CHỌN CỦA NGƯỜI DÙNG (SWITCH CASE)
-        // =================================================================
-        // 1. Gọi hàm showMenu() để hiển thị danh sách lựa chọn.
-        // 2. Nhận biến 'choice' từ bàn phím (cin >> choice) và xóa bộ nhớ đệm (cin.ignore()).
-        // 3. Sử dụng cấu trúc switch(choice) để gọi các hàm tương ứng từ đối tượng 'manager':
-        //    - Case 1: Yêu cầu nhập tên hành động (getline) rồi gọi manager.executeNewAction(inputStr).
-        //    - Case 2: Gọi manager.undoOneStep().
-        //    - Case 3: Gọi manager.redoOneStep().
-        //    - Case 4: Gọi manager.viewHistory().
-        //    - Case 5: Yêu cầu nhập ID mục tiêu rồi gọi manager.jumpToID(inputStr).
-        //    - Case 6: Gọi manager.loadFromFile("DemoData_Nhom2.txt").
-        //    - Case 7: Gọi manager.runPerformanceTest().
-        //    - Case 0: In chữ "Tam biet!" và kết thúc chương trình (return 0).
-        //    - Default: Thông báo lựa chọn không hợp lệ nếu người dùng nhập sai số.
+        showMenu();
 
-        break; // Vòng lặp tạm thời để tránh treo máy khi chưa viết code, xóa dòng này khi cài đặt.
+        cin >> choice;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        switch (choice) {
+
+        case 1:
+            cout << "Nhap ten hanh dong: ";
+            getline(cin, inputStr);
+
+            if (!inputStr.empty())
+                manager.executeNewAction(inputStr);
+            else
+                cout << "Ten hanh dong khong duoc rong!\n";
+            break;
+
+        case 2:
+            manager.undoOneStep();
+            break;
+
+        case 3:
+            manager.redoOneStep();
+            break;
+
+        case 4:
+            manager.viewHistory();
+            break;
+
+        case 5:
+            cout << "Nhap ID can nhay toi: ";
+            getline(cin, inputStr);
+
+            if (!inputStr.empty())
+                manager.jumpToID(inputStr);
+            else
+                cout << "ID khong hop le!\n";
+
+            break;
+
+        case 6:
+        {
+            int result = manager.loadFromFile("DemoData_Nhom2.txt");
+
+            if (result >= 0)
+                cout << "Da nap thanh cong " << result << " thao tac.\n";
+            else
+                cout << "Khong the mo file DemoData_Nhom2.txt\n";
+
+            break;
+        }
+
+        case 7:
+            manager.runPerformanceTest();
+            break;
+
+        case 0:
+            cout << "\nTam biet!\n";
+            return 0;
+
+        default:
+            cout << "Lua chon khong hop le!\n";
+        }
+
+        cout << "\nNhan Enter de tiep tuc...";
+        cin.get();
     }
+
     return 0;
 }
