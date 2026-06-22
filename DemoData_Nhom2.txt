@@ -1,20 +1,10 @@
-Copy
-Paste
-Delete
-InsertText
-SaveFile
-Cut
-Find
-Replace
-SelectAll
-Print
-Undo
-Redo
-ZoomIn
-ZoomOut
-SaveAs
-OpenFile
-CloseFile
-Bold
-Italic
-Underline
+Typing text
+Delete character
+Insert Image
+Change Font
+Format Table
+Click Button
+Resize Shape
+Paste Content
+Undo Format
+Apply Style
