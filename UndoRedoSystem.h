@@ -1,10 +1,9 @@
-﻿#pragma once
+#pragma once
 #ifndef UNDO_REDO_SYSTEM_H
 #define UNDO_REDO_SYSTEM_H
 
 #include <string>
 #include <iostream>
-#include <unordered_map> //thu vien hash
 
 using namespace std;
 
@@ -45,13 +44,11 @@ public:
     void clear();
 };
 
-
 class HistoryLog {
 private:
     DLLNode* head;
     DLLNode* tail;
     DLLNode* current;
-    unordered_map<string, DLLNode*> idIndex; // Hash Table: tra cuu Node theo id, do phuc tap O(1)
 
 public:
     HistoryLog();
@@ -85,4 +82,3 @@ public:
 };
 
 #endif
-
