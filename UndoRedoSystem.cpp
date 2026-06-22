@@ -125,6 +125,29 @@ void UndoRedoManager::jumpToID(string targetId) {
 }
 
 int UndoRedoManager::loadFromFile(string filename, bool verbose) {
+    ifstream file(filename);
+    if (!file.is_open()) {
+        if (verbose) cout << " >> Khong the mo file: " << filename << "\n";
+        return -1;
+    }
+
+    string actionName;
+    int count = 0;
+    while (getline(file, actionName)) {
+        if (!actionName.empty()) {
+            executeNewAction(actionName, verbose);
+            count++;
+        }
+    }
+    file.close();
+
+    if (verbose) {
+        cout << " >> Nap du lieu tu file \"" << filename << "\" thanh cong! (" << count << " thao tac)\n";
+    }
+    return count;
+}
+
+void UndoRedoManager::runPerformanceTest() {
     vector<string> files = { "TestData_Nhom2_small.txt", "TestData_Nhom2_medium.txt", "TestData_Nhom2_large.txt" };
 
     cout << "\n=========== KET QUA DANH GIA HIEU SUAT ===========\n";
@@ -151,5 +174,3 @@ int UndoRedoManager::loadFromFile(string filename, bool verbose) {
     }
     cout << "====================================================\n";
 }
-
-    
