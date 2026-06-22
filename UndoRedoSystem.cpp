@@ -125,136 +125,31 @@ void UndoRedoManager::jumpToID(string targetId) {
 }
 
 int UndoRedoManager::loadFromFile(string filename, bool verbose) {
-    ifstream fin(filename);
+    vector<string> files = { "TestData_Nhom2_small.txt", "TestData_Nhom2_medium.txt", "TestData_Nhom2_large.txt" };
 
-    if (!fin.is_open()) {
-        if (verbose)
-            cout << "Khong mo duoc file: " << filename << endl;
-        return -1;
-    }
+    cout << "\n=========== KET QUA DANH GIA HIEU SUAT ===========\n";
+    cout << left << setw(22) << "File"
+        << setw(12) << "So dong"
+        << setw(18) << "Thoi gian (ms)"
+        << "TB (ms/thao tac)\n";
 
-    string line;
-    int count = 0;
-
-    while (getline(fin, line)) {
-        if (!line.empty()) {
-            executeNewAction(line, verbose);
-            count++;
-        }
-    }
-
-    fin.close();
-
-    return count;
-}
-{
-    std::ifstream file(filename);     // 1
-    if (!file.is_open()) 
-    {
-        if (verbose)
-        {
-            cout << "Loi: Khong the mo file " << filename << endl;
-        }
-        return -1;
-    }
-
-    int count = 0;    // 2
-    string line;
-        
-    while (std::getline(file, line))    // 3
-    {
-        if (!line.empty()) 
-        {
-            executeAction(line, !verbose);
-            count++;
-        }
-    }
-    file.close();   // 4
-    return count;
-}
-
-void UndoRedoManager::runPerformanceTest() {
-
-    vector<string> files = {
-        "TestData_Nhom2_small.txt",
-        "TestData_Nhom2_medium.txt",
-        "TestData_Nhom2_large.txt"
-    };
-
-    cout << "\n==============================================================\n";
-    cout << left
-         << setw(30) << "File"
-         << setw(15) << "So dong"
-         << setw(15) << "Thoi gian(ms)"
-         << setw(15) << "TB/Action"
-         << endl;
-    cout << "==============================================================\n";
-
-    for (string file : files) {
-
+    for (size_t i = 0; i < files.size(); i++) {
         auto start = chrono::high_resolution_clock::now();
-
-        int count = loadFromFile(file, false);
-
+        int count = loadFromFile(files[i], false);
         auto end = chrono::high_resolution_clock::now();
 
-        double duration =
-            chrono::duration_cast<chrono::milliseconds>(end - start).count();
-
-        double avg = 0;
-
-        if (count > 0)
-            avg = duration / count;
-
-        cout << left
-             << setw(30) << file
-             << setw(15) << count
-             << setw(15) << duration
-             << setw(15) << fixed << setprecision(4) << avg
-             << endl;
-    }
-
-    cout << "==============================================================\n";
-}
-{
-    std::vector<string> files =   // 3-1
-    {
-        "TestData_Nhom2_small.txt",
-        "TestData_Nhom2_medium.txt",
-        "TestData_Nhom2_large.txt"
-    };
-
-    cout << "\n\n";
-    cout << std::left << std::setw(30) << "File"     // 3-2
-        << std::setw(15) << "So dong"
-        << std::setw(20) << "Thoi gian ms"
-        << "Trung binh ms/thao tac" << "\n";
-    cout << "\n";
-
-    for (const string& file : files) 
-    {
-        auto start = std::chrono::high_resolution_clock::now();
-        int count = loadFromFile(file, false);
-
-        auto end = std::chrono::high_resolution_clock::now();     // 3-3
-
-        if (count == -1) 
-        {
-            cout << std::left << std::setw(30) << file
-                << std::setw(15) << "Loi doc file" << "\n";
+        if (count < 0) {
+            cout << left << setw(22) << files[i] << "-> Khong tim thay file!\n";
             continue;
         }
 
-        std::chrono::duration<double, std::milli> duration = end - start;
-        double elapsedMs = duration.count();
-
-        double avgMsPerOp = (count > 0) ? (elapsedMs / count) : 0.0;  //  3-4
-        cout << std::left << std::setw(30) << file
-            << std::setw(15) << count
-            << std::setw(20) << std::fixed << std::setprecision(2) << elapsedMs
-            << std::fixed << std::setprecision(5) << avgMsPerOp << "\n";
+        double ms = chrono::duration<double, milli>(end - start).count();
+        cout << left << setw(22) << files[i]
+            << setw(12) << count
+                << setw(18) << fixed << setprecision(3) << ms
+                << fixed << setprecision(5) << (count > 0 ? ms / count : 0.0) << "\n";
     }
-    cout << "\n";
+    cout << "====================================================\n";
 }
 
     
