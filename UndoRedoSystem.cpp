@@ -124,11 +124,29 @@ void UndoRedoManager::jumpToID(string targetId) {
     cout << " >> Da nhay den trang thai cua ID: " << targetId << "\n";
 }
 
-int UndoRedoManager::loadFromFile(string filename, bool verbose)
-    // 1. Mở file có tên 'filename' bằng ifstream. Nếu mở lỗi, in thông báo (nếu verbose = true) và trả về -1.
-    // 2. Tạo một biến đếm count = 0 và một chuỗi tạm để đọc dữ liệu.
-    // 3. Dùng vòng lặp dữ liệu đọc từng dòng từ file (getline). Với mỗi dòng không rỗng, gọi hàm executeNewAction(line, verbose) và tăng count.
-    // 4. Đóng file và trả về số lượng hành động (count) đã nạp thành công.
+int UndoRedoManager::loadFromFile(string filename, bool verbose) {
+    ifstream fin(filename);
+
+    if (!fin.is_open()) {
+        if (verbose)
+            cout << "Khong mo duoc file: " << filename << endl;
+        return -1;
+    }
+
+    string line;
+    int count = 0;
+
+    while (getline(fin, line)) {
+        if (!line.empty()) {
+            executeNewAction(line, verbose);
+            count++;
+        }
+    }
+
+    fin.close();
+
+    return count;
+}
 {
     std::ifstream file(filename);     // 1
     if (!file.is_open()) 
@@ -155,14 +173,49 @@ int UndoRedoManager::loadFromFile(string filename, bool verbose)
     return count;
 }
 
-void UndoRedoManager::runPerformanceTest() 
-    // 1. Tạo một vector chứa danh sách 3 file: "TestData_Nhom2_small.txt", "TestData_Nhom2_medium.txt", "TestData_Nhom2_large.txt".
-    // 2. In tiêu đề bảng hiển thị kết quả (File, Số dòng, Thời gian ms, Trung bình ms/thao tác).
-    // 3. Chạy vòng lặp qua 3 file trên:
-    //    - Sử dụng thư viện <chrono> lấy mốc thời gian bắt đầu (high_resolution_clock::now()).
-    //    - Gọi hàm loadFromFile(file, false) để nạp dữ liệu (để verbose = false để tránh I/O màn hình làm sai lệch thời gian đo).
-    //    - Lấy mốc thời gian kết thúc và tính số miligiây (ms) thực thi.
-    //    - Tính toán thời gian trung bình cho mỗi thao tác (ms / count) và in kết quả ra định dạng bảng đẹp mắt, căn lề thẳng hàng.
+void UndoRedoManager::runPerformanceTest() {
+
+    vector<string> files = {
+        "TestData_Nhom2_small.txt",
+        "TestData_Nhom2_medium.txt",
+        "TestData_Nhom2_large.txt"
+    };
+
+    cout << "\n==============================================================\n";
+    cout << left
+         << setw(30) << "File"
+         << setw(15) << "So dong"
+         << setw(15) << "Thoi gian(ms)"
+         << setw(15) << "TB/Action"
+         << endl;
+    cout << "==============================================================\n";
+
+    for (string file : files) {
+
+        auto start = chrono::high_resolution_clock::now();
+
+        int count = loadFromFile(file, false);
+
+        auto end = chrono::high_resolution_clock::now();
+
+        double duration =
+            chrono::duration_cast<chrono::milliseconds>(end - start).count();
+
+        double avg = 0;
+
+        if (count > 0)
+            avg = duration / count;
+
+        cout << left
+             << setw(30) << file
+             << setw(15) << count
+             << setw(15) << duration
+             << setw(15) << fixed << setprecision(4) << avg
+             << endl;
+    }
+
+    cout << "==============================================================\n";
+}
 {
     std::vector<string> files =   // 3-1
     {
