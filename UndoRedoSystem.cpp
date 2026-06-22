@@ -9,11 +9,12 @@
 UndoRedoManager::UndoRedoManager() {
 }
 
+// Lay gio:phut:giay hien tai, dung lam timestamp cho moi hanh dong
 string UndoRedoManager::getCurrentTimeStr() {
     time_t now = time(0);
-
     tm ltm;
     localtime_s(&ltm, &now);
+
     stringstream ss;
     ss << setfill('0') << setw(2) << ltm.tm_hour << ":"
         << setw(2) << ltm.tm_min << ":"
@@ -30,40 +31,97 @@ void UndoRedoManager::viewHistory() {
 // =====
 
 void UndoRedoManager::executeNewAction(string actionName, bool verbose) {
-    // 1. Gọi hàm log.clearFuture(log.getCurrent()) để cắt bỏ toàn bộ nhánh tương lai bị thừa trước khi lưu hành động mới.
-    // 2. Tính toán mã số ID tiếp theo (nextId): Lấy ID của node 'current' hiện tại ép sang kiểu số (stoi) rồi cộng thêm 1. Nếu current là nullptr thì ID bắt đầu từ 1.
-    // 3. Khởi tạo một struct Action mới gồm: id tự tăng vừa tính, actionName, và chuỗi thời gian lấy từ hàm getCurrentTimeStr().
-    // 4. Cập nhật các cấu trúc dữ liệu:
-    //    - Thêm vào danh sách lịch sử: log.addLog(act)
-    //    - Đẩy vào ngăn xếp undo: undoStack.push(act)
-    //    - Xóa sạch ngăn xếp redo (vì chuỗi hành động mới đã làm mất hiệu lực các bước redo cũ): redoStack.clear()
-    // 5. Nếu verbose == true, in thông báo thực hiện thành công ra màn hình.
+    log.clearFuture(log.getCurrent()); // pha vo "tuong lai" cu truoc khi sinh ID moi
+
+    DLLNode* curNode = log.getCurrent();
+    int nextId = (curNode != nullptr) ? stoi(curNode->data.id) + 1 : 1;
+    string id = to_string(nextId);
+
+    Action act = { id, actionName, getCurrentTimeStr() };
+
+    log.addLog(act);
+    undoStack.push(act);
+    redoStack.clear(); // hanh dong moi pha vo chuoi Redo cu
+
+    if (verbose) {
+        cout << " >> Thuc hien thanh cong: " << actionName << " (" << id << ")\n";
+    }
 }
 
+static const string JUMP_MARKER = "__JUMP__";
+
 void UndoRedoManager::undoOneStep() {
-    // 1. Kiểm tra nếu undoStack rỗng thì in thông báo không thể Undo và dừng hàm.
-    // 2. Lấy hành động ra khỏi undoStack (pop) và đẩy hành động đó vào redoStack (push).
-    // 3. Cập nhật lại con trỏ lịch sử hệ thống: Di chuyển log.current lùi về phía trước một bước (log.setCurrent(current->prev)).
-    // 4. In thông báo đã hoàn tác hành động thành công.
+    if (undoStack.isEmpty()) {
+        cout << " >> Khong the Undo! Ban dang o trang thai ban dau.\n";
+        return;
+    }
+
+    Action act = undoStack.pop();
+    redoStack.push(act);
+
+    if (act.name == JUMP_MARKER) {
+        // act.id = ID dich (luc Jump toi), act.timestamp = ID goc (truoc khi Jump)
+        DLLNode* originNode = log.findById(act.timestamp);
+        log.setCurrent(originNode); // co the la nullptr neu goc la "truoc hanh dong dau tien"
+        cout << " >> Da Hoan tac (Undo Jump): Tro ve ID " << act.timestamp << "\n";
+        return;
+    }
+
+    if (log.getCurrent() != nullptr) {
+        log.setCurrent(log.getCurrent()->prev); // lui con tro lich su ve 1 buoc
+    }
+
+    cout << " >> Da Hoan tac (Undo): " << act.name << "\n";
 }
 
 void UndoRedoManager::redoOneStep() {
-    // 1. Kiểm tra nếu redoStack rỗng thì in thông báo không thể Redo và dừng hàm.
-    // 2. Lấy hành động ra khỏi redoStack (pop) và đẩy ngược lại vào undoStack (push).
-    // 3. Cập nhật lại con trỏ lịch sử hệ thống tiến lên một bước:
-    //    - Nếu log.current đang là nullptr (đang đứng ở vị trí ban đầu chưa có gì), đặt current trỏ tới head (hành động đầu tiên).
-    //    - Ngược lại, đặt current dịch tới node tiếp theo (current = current->next).
-    // 4. In thông báo đã làm lại hành động thành công.
+    if (redoStack.isEmpty()) {
+        cout << " >> Khong the Redo! Khong co thao tac nao de lam lai.\n";
+        return;
+    }
+
+    Action act = redoStack.pop();
+    undoStack.push(act);
+
+    if (act.name == JUMP_MARKER) {
+        // Lam lai dung buoc Jump nay: nhay thang toi ID dich (act.id)
+        DLLNode* targetNode = log.findById(act.id);
+        log.setCurrent(targetNode);
+        cout << " >> Da Lam lai (Redo Jump): Nhay den ID " << act.id << "\n";
+        return;
+    }
+
+    if (log.getCurrent() == nullptr) {
+        log.setCurrent(log.getHead());
+    }
+    else {
+        log.setCurrent(log.getCurrent()->next); // tien con tro lich su len 1 buoc
+    }
+
+    cout << " >> Da Lam lai (Redo): " << act.name << "\n";
+}
+
+void UndoRedoManager::viewHistory() {
+    log.displayHistory();
 }
 
 void UndoRedoManager::jumpToID(string targetId) {
-    // 1. Sử dụng hàm log.findById(targetId) để tìm node đích. Nếu trả về nullptr thì in lỗi và dừng hàm.
-    // 2. Thực hiện vòng lặp dịch chuyển con trỏ hiện tại (log.getCurrent()) cho tới khi nó bằng với targetNode:
-    //    - Nếu log.getCurrent() == nullptr (đang ở vạch xuất phát): chỉ có thể tiến lên bằng cách gọi redoOneStep().
-    //    - So sánh ID mục tiêu và ID hiện tại (LƯU Ý: Phải dùng stoi() để ép sang kiểu số nguyên rồi mới so sánh, không so sánh chuỗi).
-    //    - Nếu ID mục tiêu < ID hiện tại: Gọi undoOneStep() để lùi lại.
-    //    - Nếu ID mục tiêu > ID hiện tại: Gọi redoOneStep() để tiến lên.
-    // 3. Kết thúc vòng lặp, in thông báo đã nhảy thành công tới ID mong muốn.
+    DLLNode* targetNode = log.findById(targetId);
+    if (targetNode == nullptr) {
+        cout << " >> Loi: Khong tim thay ID " << targetId << " trong nhat ky!\n";
+        return;
+    }
+
+    DLLNode* originNode = log.getCurrent();
+    string originId = (originNode != nullptr) ? originNode->data.id : "0"; // "0" = truoc hanh dong dau tien
+
+    log.setCurrent(targetNode);
+
+    Action marker = { targetId, JUMP_MARKER, originId };
+    undoStack.push(marker);
+    redoStack.clear(); // Jump cung la mot hanh dong moi -> pha vo nhanh Redo cu
+
+    cout << " >> Da nhay den trang thai cua ID: " << targetId << "\n";
 }
 
 int UndoRedoManager::loadFromFile(string filename, bool verbose) {
