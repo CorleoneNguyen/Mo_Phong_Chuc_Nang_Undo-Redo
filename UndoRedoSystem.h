@@ -20,17 +20,18 @@ struct StackNode {
     StackNode* next;
 };
 
-// Node danh cho Nhat ky Lich su (History - DSLK doi)
+// Node danh cho lich su thao tac (History - DSLK doi)
 struct DLLNode {
     Action data;
     DLLNode* prev;
     DLLNode* next;
+    DLLNode* hashNext;
 };
 
 
 class MyStack {
 private:
-    StackNode* top; // giống slide
+    StackNode* top; 
 
 public:
     MyStack();
@@ -44,12 +45,20 @@ public:
     void clear();
 };
 
+
 class HistoryLog {
 private:
     DLLNode* head;
     DLLNode* tail;
     DLLNode* current;
 
+    static const int HASH_SIZE = 2220;
+    DLLNode* hashTable[HASH_SIZE] = { nullptr };
+    int hashFunc(string id) {
+        int h = 0;
+        for (char c : id) h = (h * 31 + c) % HASH_SIZE;
+        return h;
+    }
 public:
     HistoryLog();
     ~HistoryLog();
@@ -61,7 +70,6 @@ public:
     void displayHistory();
     DLLNode* findById(string id);
 };
-
 
 class UndoRedoManager {
 private:
