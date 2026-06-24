@@ -32,7 +32,11 @@ void HistoryLog::addLog(Action act) {
         current = newNode; 
     }
 
+    int idx = hashFunc(act.id);
+    newNode->hashNext = hashTable[idx];
+    hashTable[idx] = newNode;
 }
+
 
 void HistoryLog::clearFuture(DLLNode* node) {
     // Hàm này dùng để xóa các hành động thuộc "tương lai" khi người dùng thực hiện hành động mới sau khi đã Undo.
@@ -58,6 +62,13 @@ void HistoryLog::clearFuture(DLLNode* node) {
         DLLNode* temp = toDelete;
         toDelete = toDelete->next;
         delete temp; // Giải phóng vùng nhớ RAM từng nút tương lai
+
+        DLLNode** pp = &hashTable[hashFunc(temp->data.id)];
+        while (*pp && *pp != temp) pp = &((*pp)->hashNext);
+        if (*pp) *pp = temp->hashNext; // Ngắt kết nối chuỗi băm dù temp ở bất kỳ vị trí nào
+
+        delete temp;
+    
     }
 
 }
@@ -82,14 +93,7 @@ void HistoryLog::displayHistory() {
 }
 
 DLLNode* HistoryLog::findById(string id) {
-    DLLNode* cur = head;
-
-    while (cur != nullptr) {
-        if (cur->data.id == id) {
-            return cur; // Tìm thấy phần tử trùng ID, trả về con trỏ DLLNode*
-        }
-        cur = cur->next;
-    }
-
-    return nullptr; // Duyệt hết danh sách không thấy thì trả về nullptr
+    DLLNode* cur = hashTable[hashFunc(id)];
+    while (cur && cur->data.id != id) cur = cur->hashNext;
+    return cur; // Nếu không tìm thấy, cur sẽ tự bằng nullptr và trả về luôn
 }
