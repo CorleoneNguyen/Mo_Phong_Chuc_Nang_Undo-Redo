@@ -101,9 +101,6 @@ void UndoRedoManager::redoOneStep() {
     cout << " >> Da Lam lai (Redo): " << act.name << "\n";
 }
 
-void UndoRedoManager::viewHistory() {
-    log.displayHistory();
-}
 
 void UndoRedoManager::jumpToID(string targetId) {
     DLLNode* targetNode = log.findById(targetId);
