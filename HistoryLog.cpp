@@ -39,38 +39,37 @@ void HistoryLog::addLog(Action act) {
 
 
 void HistoryLog::clearFuture(DLLNode* node) {
-    // Hàm này dùng để xóa các hành động thuộc "tương lai" khi người dùng thực hiện hành động mới sau khi đã Undo.
-    DLLNode* toDelete = nullptr;
+    // 1. Xác định Node đầu tiên của tương lai cần xóa
+    DLLNode* toDelete = (node == nullptr) ? head : node->next;
 
-    // 1. Xác định vị trí bắt đầu xóa (toDelete):
-    //    - Nếu node truyền vào là nullptr (đã Undo hết về trước cả hành động đầu tiên): Cần xóa sạch toàn bộ log từ 'head'. Đặt head = tail = nullptr.
+    // 2. Cập nhật lại con trỏ head/tail của danh sách chính trước khi xóa
     if (node == nullptr) {
-        toDelete = head;
-        head = nullptr;
-        tail = nullptr;
-        current = nullptr;
+        head = tail = current = nullptr;
     }
-    //    - Ngược lại: Nhánh tương lai sẽ bắt đầu từ node->next. Ngắt kết nối bằng cách đặt node->next = nullptr và cập nhật tail = node.
     else {
-        toDelete = node->next;
         node->next = nullptr;
-        tail = node;
+        tail = node; // Cắt đuôi từ vị trí hiện tại
     }
 
-    // 2. Chạy vòng lặp giải phóng bộ nhớ (delete) các node từ vị trí 'toDelete' cho đến hết danh sách.
+    // 3. Tiến hành xóa từng Node tương lai trong cả DLL và HashTable
     while (toDelete != nullptr) {
         DLLNode* temp = toDelete;
-        toDelete = toDelete->next;
-        delete temp; // Giải phóng vùng nhớ RAM từng nút tương lai
+        toDelete = toDelete->next; // Dịch sang Node tiếp theo trước khi delete
 
-        DLLNode** pp = &hashTable[hashFunc(temp->data.id)];
-        while (*pp && *pp != temp) pp = &((*pp)->hashNext);
-        if (*pp) *pp = temp->hashNext; // Ngắt kết nối chuỗi băm dù temp ở bất kỳ vị trí nào
+        // XÓA KHỎI HASH TABLE (Dùng con trỏ cấp 2 chuẩn)
+        int idx = hashFunc(temp->data.id);
+        DLLNode** pp = &hashTable[idx];
 
-        delete temp;
-    
+        while (*pp && *pp != temp) {
+            pp = &((*pp)->hashNext);
+        }
+
+        if (*pp) {
+            *pp = temp->hashNext; // Bẻ nhánh liên kết nối tiếp, loại bỏ hoàn toàn temp khỏi hash
+        }
+
+        delete temp; // Giải phóng bộ nhớ của Node cũ
     }
-
 }
 
 void HistoryLog::displayHistory() {
