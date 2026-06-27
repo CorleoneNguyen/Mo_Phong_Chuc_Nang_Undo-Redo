@@ -1,4 +1,4 @@
-﻿#include "UndoRedoSystem.h"
+#include "UndoRedoSystem.h"
 #include <ctime>
 #include <fstream>
 #include <iomanip>
@@ -9,7 +9,6 @@
 UndoRedoManager::UndoRedoManager() {
 }
 
-// Lay gio:phut:giay hien tai, dung lam timestamp cho moi hanh dong
 string UndoRedoManager::getCurrentTimeStr() {
     time_t now = time(0);
     tm ltm;
@@ -26,12 +25,8 @@ void UndoRedoManager::viewHistory() {
     log.displayHistory();
 }
 
-// ======
-// TODO: 2 người
-// =====
-
 void UndoRedoManager::executeNewAction(string actionName, bool verbose) {
-    log.clearFuture(log.getCurrent()); // pha vo "tuong lai" cu truoc khi sinh ID moi
+    log.clearFuture(log.getCurrent()); 
 
     DLLNode* curNode = log.getCurrent();
     int nextId = (curNode != nullptr) ? stoi(curNode->data.id) + 1 : 1;
@@ -41,14 +36,14 @@ void UndoRedoManager::executeNewAction(string actionName, bool verbose) {
 
     log.addLog(act);
     undoStack.push(act);
-    redoStack.clear(); // hanh dong moi pha vo chuoi Redo cu
+    redoStack.clear(); 
 
     if (verbose) {
         cout << " >> Thuc hien thanh cong: " << actionName << " (" << id << ")\n";
     }
 }
 
-static const string JUMP_MARKER = "__JUMP__";
+static const string JUMP_MARKER = "_JUMP_";
 
 void UndoRedoManager::undoOneStep() {
     if (undoStack.isEmpty()) {
@@ -60,15 +55,14 @@ void UndoRedoManager::undoOneStep() {
     redoStack.push(act);
 
     if (act.name == JUMP_MARKER) {
-        // act.id = ID dich (luc Jump toi), act.timestamp = ID goc (truoc khi Jump)
         DLLNode* originNode = log.findById(act.timestamp);
-        log.setCurrent(originNode); // co the la nullptr neu goc la "truoc hanh dong dau tien"
+        log.setCurrent(originNode); 
         cout << " >> Da Hoan tac (Undo Jump): Tro ve ID " << act.timestamp << "\n";
         return;
     }
 
     if (log.getCurrent() != nullptr) {
-        log.setCurrent(log.getCurrent()->prev); // lui con tro lich su ve 1 buoc
+        log.setCurrent(log.getCurrent()->prev); 
     }
 
     cout << " >> Da Hoan tac (Undo): " << act.name << "\n";
@@ -84,7 +78,7 @@ void UndoRedoManager::redoOneStep() {
     undoStack.push(act);
 
     if (act.name == JUMP_MARKER) {
-        // Lam lai dung buoc Jump nay: nhay thang toi ID dich (act.id)
+        
         DLLNode* targetNode = log.findById(act.id);
         log.setCurrent(targetNode);
         cout << " >> Da Lam lai (Redo Jump): Nhay den ID " << act.id << "\n";
@@ -95,7 +89,7 @@ void UndoRedoManager::redoOneStep() {
         log.setCurrent(log.getHead());
     }
     else {
-        log.setCurrent(log.getCurrent()->next); // tien con tro lich su len 1 buoc
+        log.setCurrent(log.getCurrent()->next); 
     }
 
     cout << " >> Da Lam lai (Redo): " << act.name << "\n";
@@ -110,13 +104,13 @@ void UndoRedoManager::jumpToID(string targetId) {
     }
 
     DLLNode* originNode = log.getCurrent();
-    string originId = (originNode != nullptr) ? originNode->data.id : "0"; // "0" = truoc hanh dong dau tien
+    string originId = (originNode != nullptr) ? originNode->data.id : "0"; 
 
     log.setCurrent(targetNode);
 
     Action marker = { targetId, JUMP_MARKER, originId };
     undoStack.push(marker);
-    redoStack.clear(); // Jump cung la mot hanh dong moi -> pha vo nhanh Redo cu
+    redoStack.clear(); 
 
     cout << " >> Da nhay den trang thai cua ID: " << targetId << "\n";
 }
