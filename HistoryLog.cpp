@@ -7,7 +7,7 @@ HistoryLog::HistoryLog() {
 }
 
 HistoryLog::~HistoryLog() {
-    // Giải phóng danh sách liên kết đôi khi hủy đối tượng
+    
     DLLNode* cur = head;
     while (cur != nullptr) {
         DLLNode* nextNode = cur->next;
@@ -29,7 +29,7 @@ void HistoryLog::addLog(Action act) {
         tail->next = newNode;
         newNode->prev = tail;
         tail = newNode;
-        current = newNode; 
+        current = newNode;
     }
 
     int idx = hashFunc(act.id);
@@ -39,24 +39,24 @@ void HistoryLog::addLog(Action act) {
 
 
 void HistoryLog::clearFuture(DLLNode* node) {
-    // 1. Xác định Node đầu tiên của tương lai cần xóa
+   
     DLLNode* toDelete = (node == nullptr) ? head : node->next;
 
-    // 2. Cập nhật lại con trỏ head/tail của danh sách chính trước khi xóa
+    
     if (node == nullptr) {
         head = tail = current = nullptr;
     }
     else {
         node->next = nullptr;
-        tail = node; // Cắt đuôi từ vị trí hiện tại
+        tail = node; 
     }
 
-    // 3. Tiến hành xóa từng Node tương lai trong cả DLL và HashTable
+    
     while (toDelete != nullptr) {
         DLLNode* temp = toDelete;
-        toDelete = toDelete->next; // Dịch sang Node tiếp theo trước khi delete
+        toDelete = toDelete->next; 
 
-        // XÓA KHỎI HASH TABLE (Dùng con trỏ cấp 2 chuẩn)
+        
         int idx = hashFunc(temp->data.id);
         DLLNode** pp = &hashTable[idx];
 
@@ -65,10 +65,10 @@ void HistoryLog::clearFuture(DLLNode* node) {
         }
 
         if (*pp) {
-            *pp = temp->hashNext; // Bẻ nhánh liên kết nối tiếp, loại bỏ hoàn toàn temp khỏi hash
+            *pp = temp->hashNext; 
         }
 
-        delete temp; // Giải phóng bộ nhớ của Node cũ
+        delete temp; 
     }
 }
 
@@ -94,5 +94,5 @@ void HistoryLog::displayHistory() {
 DLLNode* HistoryLog::findById(string id) {
     DLLNode* cur = hashTable[hashFunc(id)];
     while (cur && cur->data.id != id) cur = cur->hashNext;
-    return cur; // Nếu không tìm thấy, cur sẽ tự bằng nullptr và trả về luôn
+    return cur; 
 }
