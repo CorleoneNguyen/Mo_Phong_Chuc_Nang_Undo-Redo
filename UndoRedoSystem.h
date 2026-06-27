@@ -7,14 +7,13 @@
 
 using namespace std;
 
-// Cau truc du lieu cua mot Thao tac (Action)
 struct Action {
     string id;
     string name;
     string timestamp;
 };
 
-// Node danh cho Ngan xep (Stack - DSLK don)
+// Node danh cho ngan xep (Stack - DSLK don)
 struct StackNode {
     Action data;
     StackNode* next;
@@ -25,13 +24,13 @@ struct DLLNode {
     Action data;
     DLLNode* prev;
     DLLNode* next;
-    DLLNode* hashNext;
+    DLLNode* hashNext;//hash table
 };
 
 
 class MyStack {
 private:
-    StackNode* top; 
+    StackNode* top;
 
 public:
     MyStack();
@@ -85,7 +84,7 @@ public:
     void redoOneStep();
     void viewHistory();
     void jumpToID(string targetId);
-    int loadFromFile(string filename, bool verbose = true); // tra ve so thao tac da nap, -1 neu khong mo duoc file
+    int loadFromFile(string filename, bool verbose = true); 
     void runPerformanceTest(); // doc TestData_small/medium/large.txt va do thoi gian xu ly
 };
 
