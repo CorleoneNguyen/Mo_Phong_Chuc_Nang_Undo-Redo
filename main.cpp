@@ -25,7 +25,7 @@ int main() {
     while (true) {
         showMenu();
         cin >> choice;
-        cin.ignore(); // Bo qua ky tu enter con sot lai trong buffer
+        cin.ignore(); 
 
         switch (choice) {
         case 1:
