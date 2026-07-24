@@ -1,8 +1,6 @@
 # 🔄 Undo/Redo Management System with Jump-to-ID
 
-[![Institution](https://img.shields.io/badge/University-UTH-008080.svg)](https://ut.edu.vn/)
-[![Language](https://img.shields.io/badge/Language-C%2B%2B17-blue.svg)](https://isocpp.org/)
-[![Course](https://img.shields.io/badge/Course-Data%20Structures%20%26%20Algorithms-red.svg)]()
+
 
 
 Mô phỏng chức năng **Hoàn tác (Undo)** và **Làm lại (Redo)** kết hợp **Nhảy trạng thái (Jump-to-ID)** sử dụng kết hợp các Cấu trúc Dữ liệu: **Ngăn xếp (Stack - Singly Linked List)**, **Danh sách liên kết đôi (Doubly Linked List)** và **Bảng băm (Hash Table)**.
